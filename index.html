@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SecureRender Demo</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; background: #f5f5f5; }
+    h1 { color: #333; }
+    .comparison { display: flex; gap: 40px; margin: 24px 0; flex-wrap: wrap; }
+    .panel { background: #fff; border-radius: 8px; padding: 20px; flex: 1; min-width: 280px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .panel h3 { margin: 0 0 12px; color: #555; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+    .normal-text { font-size: 48px; font-family: monospace; color: #000; word-break: break-all; }
+    canvas { display: block; max-width: 100%; }
+    .controls { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .controls label { display: block; margin-bottom: 12px; font-size: 14px; color: #444; }
+    .controls input[type=range] { width: 200px; vertical-align: middle; }
+    .controls select, .controls input[type=text] { padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; }
+    .fps-val { font-weight: bold; margin-left: 8px; }
+    .badge { display: inline-block; background: #e74c3c; color: #fff; font-size: 11px; padding: 2px 6px; border-radius: 3px; margin-left: 8px; vertical-align: middle; }
+  </style>
+</head>
+<body>
+  <h1>SecureRender <span class="badge">Demo</span></h1>
+  <p>Camera-resistant text rendering — human-readable, camera-hostile.</p>
+
+  <div class="controls">
+    <label>
+      Text:
+      <input type="text" id="textInput" value="Confidential" style="width:300px" />
+    </label>
+    <label>
+      FPS: <input type="range" id="fpsSlider" min="1" max="120" value="90" />
+      <span class="fps-val" id="fpsVal">90</span>
+    </label>
+    <label>
+      Pattern:
+      <select id="patternSelect">
+        <option value="stripe">Stripe</option>
+        <option value="diagonal">Diagonal</option>
+        <option value="crosshatch">Crosshatch</option>
+      </select>
+    </label>
+    <label>
+      <input type="checkbox" id="distortionToggle" checked />
+      Enable distortion shader
+    </label>
+  </div>
+
+  <div class="comparison">
+    <div class="panel">
+      <h3>Normal text</h3>
+      <div class="normal-text" id="normalText">Confidential</div>
+    </div>
+    <div class="panel">
+      <h3>SecureRender output</h3>
+      <canvas id="secureCanvas"></canvas>
+    </div>
+  </div>
+
+  <script type="module">
+    // Load the built library
+    import SecureRender from "../dist/index.js";
+
+    const textInput = document.getElementById("textInput");
+    const fpsSlider = document.getElementById("fpsSlider");
+    const fpsVal = document.getElementById("fpsVal");
+    const patternSelect = document.getElementById("patternSelect");
+    const distortionToggle = document.getElementById("distortionToggle");
+    const normalText = document.getElementById("normalText");
+
+    let restartTimer = null;
+
+    function restart() {
+      clearTimeout(restartTimer);
+      restartTimer = setTimeout(() => {
+        const text = textInput.value || " ";
+        normalText.textContent = text;
+        try {
+          SecureRender.render({
+            element: "#secureCanvas",
+            text,
+            fps: parseInt(fpsSlider.value, 10),
+            pattern: patternSelect.value,
+            distortion: distortionToggle.checked,
+          });
+        } catch (e) {
+          console.error("SecureRender error:", e.message);
+        }
+      }, 80);
+    }
+
+    fpsSlider.addEventListener("input", () => {
+      fpsVal.textContent = fpsSlider.value;
+      restart();
+    });
+    patternSelect.addEventListener("change", restart);
+    distortionToggle.addEventListener("change", restart);
+    textInput.addEventListener("input", restart);
+
+    // Initial render
+    restart();
+  </script>
+</body>
+</html>
