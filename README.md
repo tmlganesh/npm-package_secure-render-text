@@ -1,18 +1,28 @@
 # secure-render-text
 
-A browser-based camera-resistant text rendering engine. Renders text that is readable to human eyes but difficult for phone cameras to capture clearly.
+> Camera-resistant text rendering for the web: readable to humans, hostile to cameras and OCR.
 
-## How it works
+![npm version](https://img.shields.io/npm/v/secure-render-text?logo=npm&color=cb3837)
+![npm downloads](https://img.shields.io/npm/dm/secure-render-text?logo=npm&color=0b7a75)
+![license](https://img.shields.io/github/license/tmlganesh/npm-package_secure-render-text?color=3a86ff)
 
-Four complementary techniques are layered together:
+## Intro
 
-**Temporal frame fragmentation** — each character is split into two pixel layers that alternate at 90–120 Hz. Human persistence of vision merges the layers into readable text; a camera shutter captures only one incomplete layer.
+secure-render-text is an open-source JavaScript/TypeScript library that renders sensitive text on HTML Canvas using camera-resistant visual techniques.
+It is designed for scenarios where users must read content on-screen, but direct camera capture, screenshot OCR, and high-confidence text extraction should be significantly harder.
 
-**Micro-pattern glyph rendering** — characters are drawn using thin stripe, diagonal, or crosshatch fills instead of solid color. When photographed, the fine periodic patterns create moiré interference that degrades readability.
+Use it to add an additional visual protection layer in modern web apps handling confidential or high-value text.
 
-**Dynamic pixel noise** — a WebGL fragment shader adds subtle per-pixel noise that varies every frame, disrupting camera auto-focus and image reconstruction.
+## Features
 
-**GPU shader distortion** — a second fragment shader applies sine-wave and pseudo-random pixel displacement parameterised by the current timestamp, introducing sub-pixel shifts that compound camera capture difficulty.
+- 🔒 Camera-resistant canvas text rendering
+- ⚡ High-FPS temporal fragmentation (1-120)
+- 🧩 Layered glyph composition for capture disruption
+- 🎛️ Pattern options: stripe, diagonal, crosshatch
+- 🌊 Optional distortion pass for dynamic visual instability
+- 🧠 TypeScript-first developer experience
+- 📦 ESM + CJS package exports
+- ✅ Tested with Vitest
 
 ## Installation
 
@@ -20,61 +30,157 @@ Four complementary techniques are layered together:
 npm install secure-render-text
 ```
 
-## Usage
+## Quick Start (JavaScript)
 
 ```html
-<canvas id="myCanvas"></canvas>
+<canvas id="secure-canvas"></canvas>
 ```
 
 ```js
 import SecureRender from "secure-render-text";
 
 SecureRender.render({
-  element: "#myCanvas",   // CSS selector or HTMLCanvasElement
-  text: "Confidential",   // up to 500 characters
-  fps: 90,                // 1–120, default 90
-  pattern: "stripe",      // "stripe" | "diagonal" | "crosshatch"
-  distortion: true,       // enable WebGL distortion pass
+  element: "#secure-canvas",
+  text: "Confidential",
+  fps: 90,
+  pattern: "stripe",
+  distortion: true,
 });
 
-// Stop the render loop and release GPU resources
+// Later, stop animation and release resources.
 SecureRender.stop();
 ```
+
+## Canvas Usage Example
+
+```js
+import SecureRender from "secure-render-text";
+
+const canvas = document.getElementById("secure-canvas");
+
+SecureRender.render({
+  element: canvas,
+  text: "Exam Access Code: 7F4X-91",
+  fps: 110,
+  pattern: "crosshatch",
+  distortion: true,
+});
+```
+
+## How The Rendering System Works
+
+secure-render-text combines multiple disruption layers:
+
+1. **Temporal frame fragmentation**
+Characters are split into alternating fragments rendered across rapid frames. Human persistence of vision fuses them, while camera frame sampling often captures incomplete glyph states.
+
+2. **Layered glyph rendering**
+Text is not emitted as a single static shape. Layered render passes create unstable edges and structure that can reduce OCR confidence.
+
+3. **Micro-pattern stripe rendering**
+Fine stripe/diagonal/crosshatch fills introduce high-frequency detail that can trigger moire-like interference under camera sensors.
+
+4. **Canvas-driven dynamic drawing**
+Frame-by-frame updates maintain subtle motion and variation over time, making static capture and reconstruction harder.
+
+## Demo
+
+The project includes a live demo in the [demo/](demo) folder.
+
+Run locally:
+
+```bash
+npm run build
+```
+
+Then open [demo/index.html](demo/index.html) in a browser.
 
 ## API
 
 ### `SecureRender.render(options)`
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `element` | `string \| HTMLCanvasElement` | required | Target canvas |
-| `text` | `string` | required | Text to render (max 500 chars) |
-| `fps` | `number` | `90` | Frame alternation rate (1–120) |
-| `pattern` | `"stripe" \| "diagonal" \| "crosshatch"` | `"stripe"` | Glyph fill pattern |
-| `distortion` | `boolean` | `true` | Enable shader distortion pass |
+Starts rendering secure text on a target canvas. If another renderer is active, it is stopped first.
+
+| Option | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `element` | `string \| HTMLCanvasElement` | Yes | - | CSS selector or direct canvas element |
+| `text` | `string` | Yes | - | Text to render (max 500 chars) |
+| `fps` | `number` | No | `90` | Render frame rate, range `1-120` |
+| `pattern` | `"stripe" \| "diagonal" \| "crosshatch"` | No | `"stripe"` | Glyph fill pattern |
+| `distortion` | `boolean` | No | `true` | Enables distortion effect |
+
+Validation behavior:
+
+- Throws if `element` does not resolve to a canvas
+- Throws if `text` is not a string or exceeds 500 characters
+- Throws if `fps` is outside 1-120
+- Throws if `pattern` is not one of `stripe`, `diagonal`, `crosshatch`
 
 ### `SecureRender.stop()`
 
-Halts the render loop and releases all WebGL resources. Safe to call when not rendering.
+Stops active rendering and releases the current renderer instance.
 
-## Demo
+## Project Structure
 
-```bash
-npm run build
-# then open demo/index.html in a browser
+```text
+secure-render-text/
+|- src/          # TypeScript source code
+|- dist/         # Bundled build output (generated)
+|- demo/         # Browser demo app
+|- package.json
+|- tsup.config.ts
+|- vitest.config.ts
 ```
 
-## Limitations
+## Real-World Use Cases
 
-- **Slow-motion cameras** (240+ fps) can capture individual frames, defeating temporal fragmentation.
-- **Screen recording software** captures the composited display output and bypasses all anti-camera effects.
-- **High-DPI displays** may render pattern lines at sufficient size to be photographed without moiré.
-- **Accessibility** — screen readers cannot read canvas-rendered text; provide an accessible alternative for sensitive content.
-- **WebGL required** — browsers without WebGL support will throw an error on render.
+- 🗂️ Confidential document viewers
+- 🧪 Exam and assessment content protection
+- 🎬 DRM-style preview text overlays
+- 💧 Watermarkable on-screen text surfaces
+- 📵 Anti-screenshot UI for sensitive labels
 
-## Future extensions
+## Performance Considerations
 
-- **Watermark overlay** — embed invisible per-session watermarks into the noise layer.
-- **Camera detection** — use `getUserMedia` to detect active camera streams and increase distortion intensity.
-- **AI-based distortion** — apply learned adversarial perturbations tuned against OCR models.
-- **Mobile SDK** — native iOS/Android implementations using Metal/Vulkan shaders.
+- Best results are typically in the `60-120` FPS range.
+- Distortion and complex patterns increase GPU/CPU cost.
+- Keep canvas dimensions reasonable for low-power devices.
+- Re-render only when content/options change for better efficiency.
+- Always call `SecureRender.stop()` when leaving the screen.
+
+## Roadmap
+
+- [ ] Add configurable strength presets (low/medium/high)
+- [ ] Add adaptive rendering based on device performance
+- [ ] Add watermark embedding modes
+- [ ] Add framework examples (React, Vue, Angular)
+- [ ] Expand test coverage for rendering edge cases
+
+## Contributing
+
+Contributions are welcome.
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Install dependencies and run tests.
+4. Submit a clear pull request with context.
+
+Development commands:
+
+```bash
+npm install
+npm run build
+npm run test
+npm run typecheck
+```
+
+## License
+
+ISC
+
+## Author
+
+Built by **tmlganesh**.
+
+- GitHub: https://github.com/tmlganesh
+- npm: https://www.npmjs.com/package/secure-render-text
