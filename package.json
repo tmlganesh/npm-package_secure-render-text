@@ -35,7 +35,14 @@
   "directories": {
     "test": "test"
   },
-  "keywords": [],
+  "keywords": [
+    "anti screenshot",
+    "camera resistant text",
+    "anti OCR",
+    "secure text",
+    "screen capture protection",
+    "javascript security"
+  ],
   "author": "",
   "license": "ISC"
 }
