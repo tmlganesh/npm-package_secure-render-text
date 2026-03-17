@@ -96,6 +96,13 @@ npm run build
 Then open [demo/index.html](demo/index.html) in a browser.
 
 ## API
+### Defaults (Quick Reference)
+
+| Option      | Default Value |
+|------------|--------------|
+| fps        | `90`         |
+| pattern    | `"stripe"`   |
+| distortion | `true`       |
 
 ### `SecureRender.render(options)`
 
