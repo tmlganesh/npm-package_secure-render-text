@@ -17,6 +17,7 @@
     "dist"
   ],
   "scripts": {
+    "demo:open": "start demo/index.html",
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest --run",
