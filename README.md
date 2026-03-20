@@ -93,7 +93,17 @@ Run locally:
 npm run build
 ```
 
-Then open [demo/index.html](demo/index.html) in a browser.
+### Open demo quickly
+
+```bash
+npm run demo:open
+```
+
+This will automatically open the demo in your default browser.
+
+Alternatively, you can manually open:
+
+[demo/index.html](demo/index.html)
 
 ## API
 ### Defaults (Quick Reference)
