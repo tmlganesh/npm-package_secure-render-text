@@ -5,6 +5,7 @@ var PatternEngine = class {
   }
   getPattern(type) {
     const size = 4;
+    
     const offscreen = document.createElement("canvas");
     offscreen.width = size;
     offscreen.height = size;
@@ -429,7 +430,15 @@ var SecureRender = {
       activeRenderer = null;
     }
     const canvas = resolveCanvas(options.element);
-    if (typeof options.text !== "string" || options.text.length > 500) {
+    if (!options || typeof options.text !== "string") {
+      throw new Error("SecureRender: text must be a valid string");
+    }
+
+    if (options.text.trim() === "") {
+      throw new Error("SecureRender: text cannot be empty. Please enter some content.");
+    }
+
+    if (options.text.length > 500) {
       throw new Error("SecureRender: text exceeds 500 character limit");
     }
     const fps = options.fps ?? 90;
